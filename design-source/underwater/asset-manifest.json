@@ -1,0 +1,162 @@
+[
+  {
+    "file": "src/assets/images/underwater/baby-waving.webp",
+    "source": "design-source/underwater/baby-waving.png",
+    "width": 1254,
+    "height": 1254,
+    "transparent": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "bytes": 159414,
+    "source_bytes": 1135909,
+    "sha256": "f93a5016ce9da6e3828f0c96c85734787de0a19f2fe76eef7b7b9a138e92c03d",
+    "source_sha256": "ada4cf1fa400633d4f10ac4d19777bbf1612314ad7a26a09feb24d98f6afccce",
+    "status": "exported; reviewed individually; awaiting approval in layout"
+  },
+  {
+    "file": "src/assets/images/underwater/coral-left.webp",
+    "source": "design-source/underwater/coral-left.png",
+    "width": 1254,
+    "height": 1254,
+    "transparent": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "bytes": 249458,
+    "source_bytes": 1242516,
+    "sha256": "1d57694350701d67f34b9448d27617fdd52169c95bb679ec1a3a84f9c29391bc",
+    "source_sha256": "2a1fbb1273adcaff4d88c8ac855206e195c1804b4d710e47dbb5ad376d50f70b",
+    "status": "exported; reviewed individually; awaiting approval in layout"
+  },
+  {
+    "file": "src/assets/images/underwater/coral-right.webp",
+    "source": "design-source/underwater/coral-right.png",
+    "width": 1254,
+    "height": 1254,
+    "transparent": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "bytes": 224792,
+    "source_bytes": 1146392,
+    "sha256": "fe68af674fccf6e203a0c89546e8abdf0db1a07cc2f29617e3ce61c5aa68cfaa",
+    "source_sha256": "2c289ad6515795ab074381151d7044614716a970e7361c6a4b7637e51e6be0da",
+    "status": "exported; reviewed individually; awaiting approval in layout"
+  },
+  {
+    "file": "src/assets/images/underwater/ocean-backdrop-desktop.webp",
+    "source": "design-source/underwater/ocean-backdrop-desktop.png",
+    "width": 1672,
+    "height": 941,
+    "transparent": false,
+    "alpha_range": [
+      255,
+      255
+    ],
+    "bytes": 129406,
+    "source_bytes": 1797618,
+    "sha256": "ead1c48600930dc9d5f8c92f54b187c32c22cccf85515b99f3263c032ce81cad",
+    "source_sha256": "90e4c11b46a2c2c53cde634210ce1d9d69ec5159e343d708b2aff52402e78586",
+    "status": "exported; reviewed individually; awaiting approval in layout"
+  },
+  {
+    "file": "src/assets/images/underwater/ocean-backdrop-mobile.webp",
+    "source": "design-source/underwater/ocean-backdrop-mobile.png",
+    "width": 1024,
+    "height": 1536,
+    "transparent": false,
+    "alpha_range": [
+      255,
+      255
+    ],
+    "bytes": 70414,
+    "source_bytes": 1609022,
+    "sha256": "1e10bc56d31f580fe63ed833be39bc339ef554caee00abc87462b8a99dd6f29c",
+    "source_sha256": "17b4ff5e778ee7a09017753b4f6877b7fb18a332eae37f42a916e844e4fa00e0",
+    "status": "exported; reviewed individually; awaiting approval in layout"
+  },
+  {
+    "file": "src/assets/images/underwater/seahorse-friendly.webp",
+    "source": "design-source/underwater/seahorse-friendly.png",
+    "width": 1024,
+    "height": 1536,
+    "transparent": true,
+    "alpha_range": [
+      0,
+      254
+    ],
+    "bytes": 177028,
+    "source_bytes": 1858157,
+    "sha256": "03a205d1399a3a104986a278f5c08db615ee431c784437508927c9e3befca656",
+    "source_sha256": "c535b47dc66768c6f56b5af9382c3d6970b198aa3b887362b99fb4c384044cc4",
+    "status": "exported; reviewed individually; awaiting approval in layout"
+  },
+  {
+    "file": "src/assets/images/underwater/shell-card.webp",
+    "source": "design-source/underwater/shell-card.png",
+    "width": 1536,
+    "height": 1024,
+    "transparent": true,
+    "alpha_range": [
+      0,
+      254
+    ],
+    "bytes": 83414,
+    "source_bytes": 1659571,
+    "sha256": "ac19a7e0db6630d410b2a080809ef47ca4fd40983ddc271c48e1a0f2d67507e0",
+    "source_sha256": "35e1ffc8043eb3fc25de8ac5cdcf93d2edaa614e7c880258b12095043dbf1444",
+    "status": "exported; reviewed individually; awaiting approval in layout"
+  },
+  {
+    "file": "src/assets/images/underwater/starfish-happy.webp",
+    "source": "design-source/underwater/starfish-happy.png",
+    "width": 1254,
+    "height": 1254,
+    "transparent": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "bytes": 150172,
+    "source_bytes": 1127421,
+    "sha256": "bb6bb6d4e8716366831dba7d803f96324d1b321eb986d7428e039115ae7b7a1b",
+    "source_sha256": "215c0e31a7dddca3be8470bda1da9859a84896d0b43950851183781ca54326e8",
+    "status": "exported; reviewed individually; awaiting approval in layout"
+  },
+  {
+    "file": "src/assets/images/underwater/treasure-chest.webp",
+    "source": "design-source/underwater/treasure-chest.png",
+    "width": 1536,
+    "height": 1024,
+    "transparent": true,
+    "alpha_range": [
+      0,
+      254
+    ],
+    "bytes": 193066,
+    "source_bytes": 1968920,
+    "sha256": "96cf11b7c616753ce7fac5e0e44e7c8c71c3978d76bc0a71886c5118c319a717",
+    "source_sha256": "ef09814b66f92796df8d10ab33e63e763bbbde7f37c8c115f6e1375647d07f5c",
+    "status": "exported; reviewed individually; awaiting approval in layout"
+  },
+  {
+    "file": "src/assets/images/underwater/whale-hero.webp",
+    "source": "design-source/underwater/whale-hero.png",
+    "width": 1568,
+    "height": 1003,
+    "transparent": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "bytes": 258530,
+    "source_bytes": 1249215,
+    "sha256": "08eebf534752df9e4633a89650bd0fa5b1118503ada17ecdf1800482e37c4814",
+    "source_sha256": "af40974b78918fdc0a0bd2b1444195ef4f36a0fe2e14252382106f5bbbf9e5e6",
+    "status": "exported; reviewed individually; awaiting approval in layout"
+  }
+]

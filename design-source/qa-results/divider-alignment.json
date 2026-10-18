@@ -1,0 +1,152 @@
+[
+  {
+    "viewport": 320,
+    "layout": "stacked",
+    "venue": {
+      "cardTop": 189.75,
+      "cardLeft": 16,
+      "dividerTop": 568.3125,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "time": {
+      "cardTop": 839.875,
+      "cardLeft": 16,
+      "dividerTop": 1087.265625,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "delta": null
+  },
+  {
+    "viewport": 375,
+    "layout": "stacked",
+    "venue": {
+      "cardTop": 92.3125,
+      "cardLeft": 16,
+      "dividerTop": 470.875,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "time": {
+      "cardTop": 742.4375,
+      "cardLeft": 16,
+      "dividerTop": 989.828125,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "delta": null
+  },
+  {
+    "viewport": 390,
+    "layout": "stacked",
+    "venue": {
+      "cardTop": 107.3125,
+      "cardLeft": 16,
+      "dividerTop": 459.484375,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "time": {
+      "cardTop": 731.046875,
+      "cardLeft": 16,
+      "dividerTop": 978.4375,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "delta": null
+  },
+  {
+    "viewport": 768,
+    "layout": "stacked",
+    "venue": {
+      "cardTop": -101.84375,
+      "cardLeft": 396,
+      "dividerTop": 276.71875,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "time": {
+      "cardTop": 548.28125,
+      "cardLeft": 128,
+      "dividerTop": 795.671875,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "delta": null
+  },
+  {
+    "viewport": 1024,
+    "layout": "side by side",
+    "venue": {
+      "cardTop": 232.4375,
+      "cardLeft": 360,
+      "dividerTop": 611,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "time": {
+      "cardTop": 232.4375,
+      "cardLeft": 688,
+      "dividerTop": 611,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "delta": 0
+  },
+  {
+    "viewport": 1440,
+    "layout": "side by side",
+    "venue": {
+      "cardTop": 304.453125,
+      "cardLeft": 536,
+      "dividerTop": 656.625,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "time": {
+      "cardTop": 304.453125,
+      "cardLeft": 928,
+      "dividerTop": 656.625,
+      "width": "1px",
+      "color": "rgb(193, 221, 228)",
+      "style": "solid",
+      "padding": "16px",
+      "margin": "16px"
+    },
+    "delta": 0
+  }
+]

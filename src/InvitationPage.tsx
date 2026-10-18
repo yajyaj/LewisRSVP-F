@@ -2,10 +2,19 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { FormEvent, RefObject } from 'react'
 import { api, ApiError } from './api'
 import BubbleField from './BubbleField'
-import blueWhale from './assets/images/bluewhale.png'
-import crab from './assets/images/crab.png'
-import greenTurtle from './assets/images/green-turtle.png'
-import jellyFish from './assets/images/jelly-fish.png'
+import BabyPhotoCarousel from './components/BabyPhotoCarousel'
+import EventHero from './components/EventHero'
+import EventCountdown from './components/EventCountdown'
+import EventWelcome from './components/EventWelcome'
+import EventDetails from './components/EventDetails'
+import type { CelebrationStop } from './eventVenues'
+import RsvpSuccess from './components/RsvpSuccess'
+import babyWaving from './assets/images/underwater/baby-waving.webp'
+import type { BabyPhoto } from './components/BabyPhotoCarousel'
+import babyBday from './assets/carousel/1st_birthday_&_friends.png'
+import babyDestiny from './assets/carousel/destiny_baby.png'
+import babySeaHorse from './assets/carousel/sea_horse_baby.png'
+import babyStarFish from './assets/carousel/star_fish_baby.png'
 import type { EventProject, PublicEvent } from './types'
 
 interface InvitationPageProps {
@@ -20,23 +29,28 @@ const sampleEvent: PublicEvent = {
   public_slug: 'sample',
   combined_title: 'A little wonder, a whole lot of love',
   welcome_message: 'With full hearts, we invite you to celebrate a very special day with us.',
-  event_date: '2027-06-12',
-  start_time: '11:30',
+  event_date: '2027-01-09',
+  start_time: '10:00',
   end_time: '15:00',
   timezone: 'Asia/Manila',
-  venue_name: 'The Garden House',
-  venue_address: 'Makati City, Philippines',
+  venue_name: 'Peri-Peri Charcoal Chicken & Sauce Bar (Taytay)',
+  venue_address: 'East. Barangay, Manila E Rd, Taytay, 1920 Rizal',
   map_url: null,
   rsvp_deadline: null,
   cover_image_url: null,
   gallery_urls: [],
   theme: 'sage',
-  allow_plus_ones: true,
-  max_party_size: 4,
+  allow_plus_ones: false,
+  max_party_size: 1,
   occasion_labels: ['Christening', 'First Birthday'],
 }
 
-const COUNTDOWN_TARGET = new Date(Date.UTC(2027, 0, 2, 0, 0, 0))
+const BABY_PHOTOS: BabyPhoto[] = [
+  { src: babyBday, alt: 'Illustration of a baby celebrating with a cake and ocean friends' },
+  { src: babyDestiny, alt: 'Illustration of a baby riding a friendly whale' },
+  { src: babySeaHorse, alt: 'Illustration of a baby meeting a seahorse' },
+  { src: babyStarFish, alt: 'Illustration of a baby hugging a starfish' },
+]
 
 function prettyDate(date: string): string {
   return new Intl.DateTimeFormat(undefined, {
@@ -57,17 +71,6 @@ function prettyTime(time: string | null): string | null {
   }).format(new Date(Date.UTC(2020, 0, 1, hours, minutes)))
 }
 
-function getCountdownParts(msRemaining: number) {
-  const totalSeconds = Math.max(0, Math.floor(msRemaining / 1000))
-  return {
-    days: Math.floor(totalSeconds / 86400),
-    hours: Math.floor((totalSeconds % 86400) / 3600),
-    minutes: Math.floor((totalSeconds % 3600) / 60),
-    seconds: totalSeconds % 60,
-    isComplete: totalSeconds === 0,
-  }
-}
-
 export default function InvitationPage({ previewEvent, onClosePreview, effectsActive = false, invitationHeaderRef }: InvitationPageProps) {
   const params = new URLSearchParams(window.location.search)
   const invitationToken = params.get('invite')
@@ -82,22 +85,18 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
   const [loading, setLoading] = useState(!sample && !preview)
   const [pageError, setPageError] = useState('')
   const [formError, setFormError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [success, setSuccess] = useState('')
   const [attendance, setAttendance] = useState<'attending' | 'declined'>('attending')
-  const [partySize, setPartySize] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [bubbleBurst, setBubbleBurst] = useState<{ id: number; count: number } | null>(null)
-  const [timeLeftMs, setTimeLeftMs] = useState(() => Math.max(0, COUNTDOWN_TARGET.getTime() - Date.now()))
   const bubbleBurstId = useRef(0)
   const pageRef = useRef<HTMLElement>(null)
+  const submissionPending = useRef(false)
+  const responseIdentity = useRef<{ slug: string; key: string } | null>(null)
+  const errorSummary = useRef<HTMLParagraphElement>(null)
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setTimeLeftMs(Math.max(0, COUNTDOWN_TARGET.getTime() - Date.now()))
-    }, 1000)
-
-    return () => window.clearInterval(timer)
-  }, [])
+  useEffect(() => { if (formError) errorSummary.current?.focus({ preventScroll: true }) }, [formError])
 
   useEffect(() => {
     if (sample || previewEvent) return
@@ -130,9 +129,35 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
     header.scrollIntoView({ behavior: 'instant', block: 'start' })
   }, [effectsActive, event, invitationHeaderRef])
 
+  useEffect(() => {
+    if (!effectsActive || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const page = pageRef.current
+    if (!page || typeof IntersectionObserver === 'undefined') return
+
+    const sections = Array.from(page.querySelectorAll<HTMLElement>(':scope > section'))
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return
+        entry.target.classList.add('is-visible')
+        observer.unobserve(entry.target)
+      })
+    }, { threshold: 0.12 })
+
+    sections.forEach((section) => observer.observe(section))
+    page.classList.add('has-scroll-reveal')
+
+    return () => {
+      observer.disconnect()
+      page.classList.remove('has-scroll-reveal')
+      sections.forEach((section) => section.classList.remove('is-visible'))
+    }
+  }, [effectsActive, event])
+
   async function submitRsvp(eventForm: FormEvent<HTMLFormElement>) {
     eventForm.preventDefault()
+    if (submissionPending.current) return
     setFormError('')
+    setFieldErrors({})
     setSuccess('')
 
     if (sample || preview || !event) {
@@ -142,25 +167,26 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
 
     const formElement = eventForm.currentTarget
     const form = new FormData(formElement)
-    const responseKey = invitationToken
-      ? undefined
-      : localStorage.getItem(`rsvp-response:${event.public_slug}`) || crypto.randomUUID()
-    const additionalNames = String(form.get('additional_guest_names') || '')
-      .split('\n')
-      .map((name) => name.trim())
-      .filter(Boolean)
+    let responseKey: string | undefined
+    if (!invitationToken) {
+      let storedKey: string | null = null
+      try { storedKey = localStorage.getItem(`rsvp-response:${event.public_slug}`) } catch { /* Keep a stable in-memory identity if storage is unavailable. */ }
+      responseKey = storedKey || (responseIdentity.current?.slug === event.public_slug ? responseIdentity.current.key : crypto.randomUUID())
+      responseIdentity.current = { slug: event.public_slug, key: responseKey }
+    }
     const payload = {
       full_name: String(form.get('full_name') || '').trim(),
       attendance_status: attendance,
-      party_size: attendance === 'attending' ? partySize : 0,
+      party_size: attendance === 'attending' ? 1 : 0,
       email: String(form.get('email') || '').trim() || null,
       phone: String(form.get('phone') || '').trim() || null,
-      additional_guest_names: additionalNames,
+      additional_guest_names: [],
       dietary_or_accessibility_notes: String(form.get('dietary_or_accessibility_notes') || '').trim() || null,
       message: String(form.get('message') || '').trim() || null,
       ...(responseKey ? { response_key: responseKey } : {}),
     }
 
+    submissionPending.current = true
     setSubmitting(true)
     try {
       const path = invitationToken
@@ -170,20 +196,28 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
         method: 'POST',
         body: JSON.stringify(payload),
       })
-      if (responseKey) localStorage.setItem(`rsvp-response:${event.public_slug}`, responseKey)
+      if (responseKey) {
+        try { localStorage.setItem(`rsvp-response:${event.public_slug}`, responseKey) } catch { /* Storage restrictions must not turn a confirmed response into failure. */ }
+      }
       setSuccess(result.message)
       setBubbleBurst({ id: ++bubbleBurstId.current, count: attendance === 'attending' ? 35 : 3 })
       formElement.reset()
       setAttendance('attending')
-      setPartySize(1)
     } catch (error) {
       if (error instanceof ApiError) {
+        const groupedErrors: Record<string, string[]> = {}
+        for (const [key, messages] of Object.entries(error.errors)) {
+          const field = key.split('.')[0]
+          groupedErrors[field] = [...(groupedErrors[field] || []), ...messages]
+        }
+        setFieldErrors(groupedErrors)
         const firstError = Object.values(error.errors).flat()[0]
         setFormError(firstError || error.message)
       } else {
         setFormError(error instanceof Error ? error.message : 'We could not save your RSVP. Please try again.')
       }
     } finally {
+      submissionPending.current = false
       setSubmitting(false)
     }
   }
@@ -197,142 +231,88 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
 
   const startsAt = prettyTime(event.start_time)
   const endsAt = prettyTime(event.end_time)
-  const countdown = getCountdownParts(timeLeftMs)
-  const destinationText = [event.venue_name, event.venue_address].filter(Boolean).join(', ').trim()
-  const mapsSearchUrl = event.map_url && /^https?:\/\//i.test(event.map_url)
-    ? event.map_url
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destinationText || 'event venue')}`
-  const mapsDirectionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationText || 'event venue')}`
+  const stops: CelebrationStop[] = sample ? [
+    {
+      label: 'Christening',
+      name: 'Minor Basilica and Parish of St. John the Baptist- Taytay, Rizal (Diocese of Antipolo)',
+      address: 'Taytay, Rizal',
+      startsAt: prettyTime('10:00'), endsAt: prettyTime('11:00'), mapUrl: null,
+    },
+    {
+      label: 'Birthday party', name: event.venue_name, address: event.venue_address,
+      startsAt: prettyTime('11:30'), endsAt, mapUrl: event.map_url,
+    },
+  ] : [{
+    label: 'Celebration', name: event.venue_name, address: event.venue_address,
+    startsAt, endsAt, mapUrl: event.map_url,
+  }]
+  const fieldAttributes = (name: string) => ({
+    'aria-invalid': fieldErrors[name]?.length ? true as const : undefined,
+    'aria-describedby': fieldErrors[name]?.length ? `rsvp-${name}-error` : undefined,
+  })
+  const fieldError = (name: string) => fieldErrors[name]?.length
+    ? <span className="rsvp-field-error" id={`rsvp-${name}-error`}>{fieldErrors[name].join(' ')}</span> : null
 
   return (
     <main ref={pageRef} className={`invitation min-h-screen theme-${event.theme}`}>
       <BubbleField pageRef={pageRef} enabled={effectsActive && !preview} burst={bubbleBurst} />
       <nav ref={invitationHeaderRef} className="invite-nav flex items-center justify-between" tabIndex={-1}>
         <a className="brand" href="/">gather<span>.</span></a>
+        <div className="invite-section-links">
+          <a href="#welcome-heading">Our little one</a>
+          <a href="#details-heading">Details</a>
+          <a href="#baby-carousel-heading">Images</a>
+          <a href="#rsvp">RSVP</a>
+        </div>
         {preview && onClosePreview
           ? <button className="preview-close" type="button" onClick={onClosePreview}>← Back to dashboard</button>
           : <span className="nav-note">{sample ? 'SAMPLE INVITATION · PREVIEW' : 'YOU ARE INVITED'}</span>}
       </nav>
-      <section className={`hero ${event.cover_image_url ? 'hero-photo' : ''}`} style={event.cover_image_url ? { backgroundImage: `linear-gradient(180deg, rgba(49,69,104,.2), rgba(49,69,104,.68)), url("${event.cover_image_url}")` } : undefined}>
-        <div className="hero-ornament" aria-hidden="true">✳</div>
-        <div className="hero-content relative z-10">
-          <p className="eyebrow">TOGETHER IS A BEAUTIFUL PLACE TO BE</p>
-          <h1>{event.combined_title}</h1>
-          <div className="occasion-list">
-            {event.occasion_labels.map((label) => <span key={label}>{label}</span>)}
-          </div>
-          <p className="hero-date">{prettyDate(event.event_date)}</p>
-          <a className="button button-light" href="#rsvp">Kindly reply <span aria-hidden="true">↗</span></a>
-        </div>
-        <span className="hero-caption">A DAY MADE FOR MAKING MEMORIES</span>
-      </section>
+      <EventHero event={event} formattedDate={prettyDate(event.event_date)} />
+      <EventCountdown event={event} />
 
-      <section className="welcome-section">
-        <p className="eyebrow">A NOTE FROM THE HOSTS</p>
-        <p className="welcome-copy">{event.welcome_message || 'We would be delighted to celebrate this day with you.'}</p>
-        <span className="flourish" aria-hidden="true">✳</span>
-        <img className="underwater-art art-whale" src={blueWhale} alt="" aria-hidden="true" />
-        <img className="underwater-art art-jellyfish" src={jellyFish} alt="" aria-hidden="true" />
-      </section>
+      <EventWelcome message={event.welcome_message} />
+      <EventDetails event={event} date={prettyDate(event.event_date)} stops={stops} />
+      <BabyPhotoCarousel photos={BABY_PHOTOS} illustrations />
 
-      <section className="countdown-section" aria-labelledby="countdown-heading">
-        <div className="countdown-shell">
-          <p className="eyebrow">THE OCEAN ADVENTURE BEGINS IN…</p>
-          <h2 id="countdown-heading">{countdown.isComplete ? 'The celebration has arrived.' : 'The Ocean Adventure Begins In…'}</h2>
-          {countdown.isComplete ? (
-            <p className="countdown-celebration">We can&rsquo;t wait to celebrate with you beneath the waves.</p>
-          ) : (
-            <div className="countdown-grid" aria-live="polite">
-              <div className="countdown-card"><span>{String(countdown.days).padStart(2, '0')}</span><small>Days</small></div>
-              <div className="countdown-card"><span>{String(countdown.hours).padStart(2, '0')}</span><small>Hours</small></div>
-              <div className="countdown-card"><span>{String(countdown.minutes).padStart(2, '0')}</span><small>Minutes</small></div>
-              <div className="countdown-card"><span>{String(countdown.seconds).padStart(2, '0')}</span><small>Seconds</small></div>
-            </div>
-          )}
-        </div>
-      </section>
 
-      <section className="details-section">
-        <div className="details-intro">
-          <p className="eyebrow">SAVE THE DATE</p>
-          <h2>All the little details</h2>
-          <p>One joyful gathering, shared with the people we love.</p>
+      <section className="rsvp-section ocean-rsvp-section" id="rsvp" tabIndex={-1} aria-labelledby="rsvp-heading">
+        <div className="ocean-rsvp-layout">
+        <div className="ocean-rsvp-art" aria-hidden="true">
+          <img src={babyWaving} alt="" width={1254} height={1254} loading="lazy" decoding="async" />
         </div>
-        <div className="detail-grid grid md:grid-cols-2">
-          <article className="detail-card">
-            <span className="detail-icon" aria-hidden="true">01</span>
-            <p className="eyebrow">WHEN</p>
-            <h3>{prettyDate(event.event_date)}</h3>
-            <p>{startsAt}{endsAt ? ` – ${endsAt}` : ''}{event.timezone ? ` · ${event.timezone.replaceAll('_', ' ')}` : ''}</p>
-          </article>
-          <article className="detail-card">
-            <span className="detail-icon" aria-hidden="true">02</span>
-            <p className="eyebrow">WHERE</p>
-            <h3>{event.venue_name || 'Venue to be announced'}</h3>
-            <p>{event.venue_address || 'We will share the location soon.'}</p>
-            {event.map_url && <a className="text-link" href={event.map_url} target="_blank" rel="noreferrer">Open map ↗</a>}
-          </article>
-        </div>
-        {event.cover_image_url && <img className="cover-image" src={event.cover_image_url} alt="A glimpse of the celebration venue" />}
-        {event.gallery_urls.length > 0 && <div className="gallery">{event.gallery_urls.map((url) => <img key={url} src={url} alt="A moment from the celebration" loading="lazy" />)}</div>}
-        <img className="underwater-art art-turtle" src={greenTurtle} alt="" aria-hidden="true" />
-      </section>
-
-      <section className="venue-section" aria-labelledby="venue-heading">
-        <div className="venue-card">
-          <div className="venue-copy">
-            <p className="eyebrow">FIND YOUR WAY TO THE CELEBRATION</p>
-            <h2 id="venue-heading">Find Your Way to the Celebration</h2>
-            <p className="venue-description">We&rsquo;re gathering with our favorite people, and we hope you&rsquo;ll join us for the day.</p>
-          </div>
-          <div className="venue-details">
-            <p className="venue-name">{event.venue_name || 'Venue to be announced'}</p>
-            <p>{event.venue_address || 'The venue address will be shared soon.'}</p>
-            <p>{prettyDate(event.event_date)}{startsAt ? ` · ${startsAt}` : ''}{endsAt ? ` – ${endsAt}` : ''}{event.timezone ? ` · ${event.timezone.replaceAll('_', ' ')}` : ''}</p>
-            <div className="maps-actions">
-              <a className="button button-light" href={mapsSearchUrl} target="_blank" rel="noreferrer">Open Google Maps</a>
-              <a className="button button-outline" href={mapsDirectionsUrl} target="_blank" rel="noreferrer">Get Directions</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="rsvp-section" id="rsvp">
         <div className="rsvp-card">
           <p className="eyebrow">WE HOPE YOU CAN JOIN US</p>
-          <h2 id="rsvp-heading">Will you be there?</h2>
+          <h2 id="rsvp-heading" tabIndex={-1}>Will you be there?</h2>
           {event.rsvp_deadline && <p className="deadline">Please reply by {new Date(event.rsvp_deadline).toLocaleDateString()}.</p>}
           {(sample || preview) && <p className="sample-notice">{preview ? 'Preview mode — RSVPs are disabled.' : 'You’re viewing a sample invitation. RSVPs are disabled in this preview.'}</p>}
           {success ? (
-            <div className="success-message" role="status"><span aria-hidden="true">✓</span><p>{success}</p><small>You can submit again later to update your response.</small><button type="button" className="text-link" onClick={() => setSuccess('')}>Change my response</button></div>
+            <RsvpSuccess message={success} onChange={() => setSuccess('')} />
           ) : (
-            <form className="rsvp-form" onSubmit={submitRsvp}>
-              <label>Full name<input name="full_name" autoComplete="name" required maxLength={255} value={guestName} onChange={(eventInput) => setGuestName(eventInput.target.value)} /></label>
-              <fieldset className="attendance-options">
+            <form className="rsvp-form" onSubmit={submitRsvp} aria-busy={submitting}>
+              <label><span>Full name <span className="required-note">(required)</span></span><input {...fieldAttributes('full_name')} name="full_name" autoComplete="name" required maxLength={255} value={guestName} onChange={(eventInput) => setGuestName(eventInput.target.value)} />{fieldError('full_name')}</label>
+              <fieldset className="attendance-options" {...fieldAttributes('attendance_status')}>
                 <legend>Your reply</legend>
                 <label className={`choice ${attendance === 'attending' ? 'selected' : ''}`}><input type="radio" name="attendance" checked={attendance === 'attending'} onChange={() => setAttendance('attending')} /><span>Joyfully accepts</span></label>
                 <label className={`choice ${attendance === 'declined' ? 'selected' : ''}`}><input type="radio" name="attendance" checked={attendance === 'declined'} onChange={() => setAttendance('declined')} /><span>Regretfully declines</span></label>
               </fieldset>
-              {attendance === 'attending' && event.allow_plus_ones && (
+              {fieldError('attendance_status')}
+              {attendance === 'attending' && (
                 <label>Number attending
-                  <select value={partySize} onChange={(change) => setPartySize(Number(change.target.value))}>
-                    {Array.from({ length: event.max_party_size }, (_, index) => index + 1).map((count) => <option key={count} value={count}>{count} {count === 1 ? 'guest' : 'guests'}</option>)}
-                  </select>
+                  <input {...fieldAttributes('party_size')} name="party_size" value="1 guest" readOnly />
+                  {fieldError('party_size')}
                 </label>
               )}
-              {attendance === 'attending' && event.allow_plus_ones && partySize > 1 && <label>Additional guest names <span className="optional">(optional, one per line)</span><textarea name="additional_guest_names" rows={3} maxLength={1000} /></label>}
               <div className="contact-row">
-                <label>Email <span className="optional">(optional)</span><input type="email" name="email" autoComplete="email" maxLength={255} /></label>
-                <label>Phone <span className="optional">(optional)</span><input type="tel" name="phone" autoComplete="tel" maxLength={40} /></label>
+                <label>Email <span className="optional">(optional)</span><input {...fieldAttributes('email')} type="email" name="email" autoComplete="email" maxLength={255} />{fieldError('email')}</label>
+                <label>Phone <span className="optional">(optional)</span><input {...fieldAttributes('phone')} type="tel" name="phone" autoComplete="tel" maxLength={40} />{fieldError('phone')}</label>
               </div>
-              <label>Dietary or accessibility needs <span className="optional">(optional)</span><textarea name="dietary_or_accessibility_notes" rows={2} maxLength={2000} /></label>
-              <label>A note for the hosts <span className="optional">(optional)</span><textarea name="message" rows={2} maxLength={2000} /></label>
-              {formError && <p className="form-error" role="alert">{formError}</p>}
+              {formError && <p ref={errorSummary} className="form-error" role="alert" tabIndex={-1}>{formError}</p>}
               <button className="button button-dark" type="submit" disabled={submitting || sample || preview}>{submitting ? 'Saving your reply…' : 'Send my RSVP'} <span aria-hidden="true">↗</span></button>
             </form>
           )}
         </div>
-        <img className="underwater-art art-crab" src={crab} alt="" aria-hidden="true" />
+        </div>
       </section>
       <footer className="invite-footer"><a className="brand" href="/">gather<span>.</span></a><p>Made with care, for moments that matter.</p><a href="#rsvp">Reply to invitation ↑</a></footer>
     </main>

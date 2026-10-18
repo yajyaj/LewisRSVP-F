@@ -1,0 +1,46 @@
+const { chromium } = require(require('node:path').join(require('node:os').tmpdir(), 'rsvp-browser-tools/node_modules/playwright'))
+const assert = require('node:assert/strict')
+const path = require('node:path')
+const fs = require('node:fs')
+const output = path.join(__dirname, 'qa-results')
+fs.mkdirSync(output, { recursive: true })
+;(async () => {
+  const browser = await chromium.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true })
+  try {
+    const page = await browser.newPage({ reducedMotion: 'reduce' })
+    const errors = []
+    page.on('pageerror', error => errors.push(error.message))
+    await page.goto('http://127.0.0.1:5173/')
+    await page.locator('.landing-art img').evaluate(image => image.decode())
+    for (const [width, height] of [[320,568],[375,812],[390,844],[768,1024],[1024,900],[1440,1000],[844,390]]) {
+      await page.setViewportSize({ width, height })
+      const landing = page.locator('.ocean-landing')
+      assert.equal(await landing.evaluate(e => e.scrollWidth <= e.clientWidth), true, `landing overflow at ${width}`)
+      const button = page.getByRole('button', { name: 'You Are Invited', exact: true })
+      await button.scrollIntoViewIfNeeded()
+      const box = await button.boundingBox()
+      assert.ok(box && box.width >= 44 && box.height >= 44 && box.y >= 0 && box.y + box.height <= height)
+      console.log(`landing ${width}x${height}: no horizontal overflow; CTA accessible`)
+      if (width === 1440 || width === 390) {
+        await landing.evaluate(e => { e.scrollTop = 0 })
+        await page.screenshot({ path: path.join(output, `landing-${width}.png`) })
+      }
+    }
+    assert.equal(await page.locator('.landing-art img').evaluate(e => getComputedStyle(e).animationName), 'none')
+    assert.equal(await page.locator('.experience-content').getAttribute('inert'), '')
+    await page.getByRole('button', { name: 'You Are Invited', exact: true }).focus()
+    await page.keyboard.press('Enter')
+    await page.locator('.ocean-landing').waitFor({ state: 'detached' })
+    assert.equal(await page.locator('.invite-nav').evaluate(e => e === document.activeElement), true)
+    assert.equal(await page.evaluate(() => document.body.style.overflow), '')
+    console.log('reduced motion, keyboard reveal, header focus, scroll unlock: passed')
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto('http://127.0.0.1:5173/')
+    await page.getByRole('button', { name: 'You Are Invited', exact: true }).click()
+    assert.equal(await page.getByRole('button', { name: 'You Are Invited', exact: true }).isDisabled(), true)
+    await page.locator('.ocean-landing').waitFor({ state: 'detached' })
+    assert.equal(await page.locator('.invite-nav').evaluate(e => e === document.activeElement), true)
+    assert.deepEqual(errors, [])
+    console.log('animated wave reveal, duplicate-click guard, header focus, no JS errors: passed')
+  } finally { await browser.close() }
+})().catch(error => { console.error(error); process.exitCode = 1 })
