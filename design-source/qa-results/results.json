@@ -1,0 +1,102 @@
+[
+  {
+    "name": "January 9 date, both venue schedules/maps, no duplicate venue section",
+    "detail": "passed"
+  },
+  {
+    "name": "form label associations, image alt attributes, 44px navigation targets",
+    "detail": "passed"
+  },
+  {
+    "name": "responsive 320x800",
+    "detail": "passed"
+  },
+  {
+    "name": "responsive 375x812",
+    "detail": "passed"
+  },
+  {
+    "name": "responsive 390x844",
+    "detail": "passed"
+  },
+  {
+    "name": "responsive 768x1024",
+    "detail": "passed"
+  },
+  {
+    "name": "responsive 1024x900",
+    "detail": "passed"
+  },
+  {
+    "name": "responsive 1440x1000",
+    "detail": "passed"
+  },
+  {
+    "name": "responsive 844x390",
+    "detail": "passed"
+  },
+  {
+    "name": "lightbox keyboard, focus containment/return, contain sizing, scroll cleanup",
+    "detail": "passed"
+  },
+  {
+    "name": "lightbox backdrop dismissal",
+    "detail": "passed"
+  },
+  {
+    "name": "hero RSVP focus and preview guard",
+    "detail": "passed"
+  },
+  {
+    "name": "failed incoming image retains the visible image and offers retry",
+    "detail": "passed"
+  },
+  {
+    "name": "200 percent text scaling at mobile width",
+    "detail": "passed"
+  },
+  {
+    "name": "server error association, retained values, duplicate guard, no false success (mock API)",
+    "detail": "passed"
+  },
+  {
+    "name": "confirmed success, plus-ones, declined reply, repeat-response identity (mock API)",
+    "detail": "passed"
+  },
+  {
+    "name": "private invitation guest prefill and endpoint/token behavior (mock API)",
+    "detail": "passed"
+  },
+  {
+    "name": "long text, missing venue/time fallback, and provided event cover at 320px (mock API)",
+    "detail": "passed"
+  },
+  {
+    "name": "admin dashboard preview and return; preview cannot submit (mock API)",
+    "detail": "passed"
+  },
+  {
+    "name": "real touch swipe avoids modal; tap opens and closes modal",
+    "detail": "passed"
+  },
+  {
+    "name": "carousel visibilitychange pause (simulated hidden-document state)",
+    "detail": "passed"
+  },
+  {
+    "name": "five-second carousel rotation and explicit pause",
+    "detail": "passed"
+  },
+  {
+    "name": "offscreen carousel pause and bounded bubble count under Strict Mode",
+    "detail": "passed"
+  },
+  {
+    "name": "4x CPU-throttled modal interaction and bounded bubble count (desktop simulation)",
+    "detail": "passed"
+  },
+  {
+    "name": "sample page JavaScript errors",
+    "detail": "none"
+  }
+]

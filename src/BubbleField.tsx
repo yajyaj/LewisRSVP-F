@@ -90,7 +90,7 @@ export default function BubbleField({ pageRef, enabled, burst = null }: BubbleFi
   const replacePool = useCallback((isReducedMotion: boolean) => {
     const page = pageRef.current
     if (!page) return
-    const height = Math.max(page.scrollHeight, window.innerHeight)
+    const height = Math.max(page.offsetHeight, window.innerHeight)
     setCanvasHeight(height)
     const mobile = window.matchMedia(MOBILE_QUERY).matches
     const count = isReducedMotion ? 4 : Math.max(4, Math.round((mobile ? 20 : 30) * 0.8))
@@ -114,7 +114,8 @@ export default function BubbleField({ pageRef, enabled, burst = null }: BubbleFi
     const measure = () => {
       const currentPage = pageRef.current
       if (!currentPage) return
-      const height = Math.max(currentPage.scrollHeight, window.innerHeight)
+      // offsetHeight excludes this absolute layer, allowing the page to shrink on resize.
+      const height = Math.max(currentPage.offsetHeight, window.innerHeight)
       setCanvasHeight(height)
       updateBubbles(bubblesRef.current.map((bubble) => ({
         ...bubble,
@@ -144,7 +145,7 @@ export default function BubbleField({ pageRef, enabled, burst = null }: BubbleFi
 
     const mobile = window.matchMedia(MOBILE_QUERY).matches
     const limit = mobile ? 20 : 30
-    const height = Math.max(page.scrollHeight, window.innerHeight)
+    const height = Math.max(page.offsetHeight, window.innerHeight)
     const current = bubblesRef.current.filter((bubble) => !bubble.temporary)
     const count = Math.min(Math.max(1, requestedCount), limit)
     const burstPool = current.slice(0, count)
@@ -197,7 +198,7 @@ export default function BubbleField({ pageRef, enabled, burst = null }: BubbleFi
       const mobile = window.matchMedia(MOBILE_QUERY).matches
       const limit = mobile ? 20 : 30
       const current = bubblesRef.current
-      const height = Math.max(page.scrollHeight, window.innerHeight)
+      const height = Math.max(page.offsetHeight, window.innerHeight)
       const extras = positions.slice(0, Math.max(0, limit - current.length)).map((position) =>
         makeBubble(nextBubbleId.current++, height, true, position))
       if (extras.length) updateBubbles([...current, ...extras])
@@ -253,7 +254,7 @@ export default function BubbleField({ pageRef, enabled, burst = null }: BubbleFi
         if (currentPage && !document.hidden) {
           addTemporaryBubbles([{
             left: currentPage.clientWidth * randomBetween(0.86, 0.96),
-            top: Math.max(0, currentPage.scrollHeight - 70),
+            top: Math.max(0, currentPage.offsetHeight - 70),
           }])
         }
         scheduleSourceBubble()
@@ -293,7 +294,7 @@ export default function BubbleField({ pageRef, enabled, burst = null }: BubbleFi
     const existing = bubblesRef.current.find((bubble) => bubble.id === id)
     const page = pageRef.current
     if (!existing || existing.temporary || existing.burst || !page) return
-    const height = Math.max(page.scrollHeight, window.innerHeight)
+    const height = Math.max(page.offsetHeight, window.innerHeight)
     const recycled = { ...existing, left: randomBetween(2, 98), leftUnit: '%' as const, top: height + 15 }
     updateBubbles(bubblesRef.current.map((bubble) => bubble.id === id ? recycled : bubble))
   }
@@ -305,7 +306,7 @@ export default function BubbleField({ pageRef, enabled, burst = null }: BubbleFi
     if (existing.temporary) {
       updateBubbles(bubblesRef.current.filter((bubble) => bubble.id !== id))
     } else if (existing.burst) {
-      const height = Math.max(page.scrollHeight, window.innerHeight)
+      const height = Math.max(page.offsetHeight, window.innerHeight)
       const recycled = makeBubble(id, height)
       updateBubbles(bubblesRef.current.map((bubble) => bubble.id === id ? recycled : bubble))
     }

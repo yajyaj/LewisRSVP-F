@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { AnimationEvent } from 'react'
 import InvitationPage from './InvitationPage'
-import oceanBackground from './assets/images/ocean-background.jpg'
+import landingWhale from './assets/images/underwater/whale-hero.webp'
 
 export default function InvitationExperience() {
   const [isOpening, setIsOpening] = useState(false)
@@ -76,16 +76,21 @@ export default function InvitationExperience() {
         <InvitationPage effectsActive={isRevealed} invitationHeaderRef={invitationHeaderRef} />
       </div>
       {!isRevealed && (
-        <section className="invitation-landing" aria-labelledby="landing-title">
-          <div
-            className="landing-scene"
-            style={{ backgroundImage: `linear-gradient(135deg, rgba(199, 228, 238, .34), rgba(82, 111, 166, .35)), url("${oceanBackground}")` }}
-          >
+        <section className="invitation-landing ocean-landing" aria-labelledby="landing-title">
+          <div className="landing-scene">
+            <p className="landing-wordmark"><span className="landing-brand">gather<span>.</span></span><span className="landing-wordmark-note">A LITTLE OCEAN ADVENTURE</span></p>
             <span className="landing-bubble landing-bubble-one" aria-hidden="true" />
             <span className="landing-bubble landing-bubble-two" aria-hidden="true" />
             <span className="landing-bubble landing-bubble-three" aria-hidden="true" />
             <span className="landing-bubble landing-bubble-four" aria-hidden="true" />
+            <div className="landing-stage">
+            <div className="landing-art" aria-hidden="true">
+              <span className="landing-art-orbit" />
+              <img src={landingWhale} alt="" width={1568} height={1003} decoding="async" fetchPriority="high" />
+              <p className="landing-art-note">Little moments. Big memories.</p>
+            </div>
             <div className="landing-card">
+              <span className="landing-card-accent" aria-hidden="true">✦</span>
               <p className="landing-eyebrow">A LITTLE SOMETHING SPECIAL</p>
               <h1 id="landing-title">A celebration awaits</h1>
               <p className="landing-copy">A little celebration is waiting beneath the waves.</p>
@@ -94,10 +99,13 @@ export default function InvitationExperience() {
                 type="button"
                 onClick={openInvitation}
                 disabled={isOpening}
+                aria-describedby="landing-hint"
               >
-                You Are Invited
+                You Are Invited <span className="landing-button-arrow" aria-hidden="true">↗</span>
               </button>
-              <p className="landing-hint">Click or tap to open your invitation</p>
+              <p className="landing-hint" id="landing-hint">Click or tap to open your invitation</p>
+              <p className="landing-opening-status" role="status">{isOpening ? 'Opening your invitation…' : ''}</p>
+            </div>
             </div>
             {isOpening && (
               <div className="wave-reveal is-playing" aria-hidden="true">

@@ -1,0 +1,13 @@
+{
+  "environment": "isolated local SQLite; not existing MySQL or production",
+  "csrfEnforced": true,
+  "checks": [
+    "real browser login, cross-origin credentialed requests, CSRF header and HttpOnly session cookie",
+    "CSRF enforced on HTTP POST; rejected request leaves session intact",
+    "real organizer session creates and publishes a temporary event",
+    "real public browser RSVP and server-confirmed success persisted to isolated SQLite",
+    "real repeat RSVP updates one stored response instead of duplicating",
+    "guest cannot read authenticated admin API",
+    "temporary event deletion and real logout/session invalidation"
+  ]
+}
