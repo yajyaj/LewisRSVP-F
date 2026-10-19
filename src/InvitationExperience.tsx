@@ -1,9 +1,14 @@
+import { siteConfig } from './siteConfig'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { AnimationEvent } from 'react'
 import InvitationPage from './InvitationPage'
+import type { PublicEvent } from './types'
+import { prettyDate } from './eventPresentation'
 import landingWhale from './assets/images/underwater/whale-hero.webp'
 
 export default function InvitationExperience() {
+  const [event, setEvent] = useState<PublicEvent | null>(null)
+  const [loadError, setLoadError] = useState('')
   const [isOpening, setIsOpening] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
   const openingRef = useRef(false)
@@ -36,7 +41,7 @@ export default function InvitationExperience() {
   }, [isRevealed])
 
   function openInvitation() {
-    if (openingRef.current) return
+    if (openingRef.current || !event) return
     openingRef.current = true
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -45,7 +50,7 @@ export default function InvitationExperience() {
     }
 
     setIsOpening(true)
-    revealTimerRef.current = window.setTimeout(finishReveal, 1300)
+    revealTimerRef.current = window.setTimeout(finishReveal, window.matchMedia('(max-width: 600px)').matches ? 1800 : 1300)
   }
 
   function finishReveal() {
@@ -73,12 +78,12 @@ export default function InvitationExperience() {
         aria-label="Your invitation"
         tabIndex={-1}
       >
-        <InvitationPage effectsActive={isRevealed} invitationHeaderRef={invitationHeaderRef} />
+        <InvitationPage onEventLoaded={setEvent} onLoadError={setLoadError} effectsActive={isRevealed} invitationHeaderRef={invitationHeaderRef} />
       </div>
       {!isRevealed && (
         <section className="invitation-landing ocean-landing" aria-labelledby="landing-title">
           <div className="landing-scene">
-            <p className="landing-wordmark"><span className="landing-brand">gather<span>.</span></span><span className="landing-wordmark-note">A LITTLE OCEAN ADVENTURE</span></p>
+            <p className="landing-wordmark"><span className="landing-brand">{siteConfig.name}</span><span className="landing-wordmark-note">A LITTLE OCEAN ADVENTURE</span></p>
             <span className="landing-bubble landing-bubble-one" aria-hidden="true" />
             <span className="landing-bubble landing-bubble-two" aria-hidden="true" />
             <span className="landing-bubble landing-bubble-three" aria-hidden="true" />
@@ -92,13 +97,15 @@ export default function InvitationExperience() {
             <div className="landing-card">
               <span className="landing-card-accent" aria-hidden="true">✦</span>
               <p className="landing-eyebrow">A LITTLE SOMETHING SPECIAL</p>
-              <h1 id="landing-title">A celebration awaits</h1>
-              <p className="landing-copy">A little celebration is waiting beneath the waves.</p>
+              <h1 id="landing-title">{event ? event.landing_title?.trim() || siteConfig.landingTitle : (loadError ? 'Invitation unavailable' : 'Loading your invitation...')}</h1>
+              {event ? <><p className="landing-copy">{event.landing_subtitle?.trim() || siteConfig.landingSubtitle}</p><p className="landing-copy">{prettyDate(event.event_date)}</p><p className="landing-copy">{event.occasion_labels.join(' & ')}</p></>
+                : <p className="landing-copy" role="status">{loadError || 'Preparing your celebration details.'}</p>}
+              {loadError && <button type="button" className="landing-button" onClick={() => window.location.reload()}>Try again</button>}
               <button
                 className="landing-button"
                 type="button"
                 onClick={openInvitation}
-                disabled={isOpening}
+                disabled={isOpening || !event}
                 aria-describedby="landing-hint"
               >
                 You Are Invited <span className="landing-button-arrow" aria-hidden="true">↗</span>

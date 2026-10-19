@@ -1,3 +1,4 @@
+import { siteConfig } from './siteConfig'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { FormEvent, RefObject } from 'react'
 import { api, ApiError } from './api'
@@ -7,7 +8,7 @@ import EventHero from './components/EventHero'
 import EventCountdown from './components/EventCountdown'
 import EventWelcome from './components/EventWelcome'
 import EventDetails from './components/EventDetails'
-import type { CelebrationStop } from './eventVenues'
+import { prettyDate, eventStops, deadlineDate } from './eventPresentation'
 import RsvpSuccess from './components/RsvpSuccess'
 import babyWaving from './assets/images/underwater/baby-waving.webp'
 import type { BabyPhoto } from './components/BabyPhotoCarousel'
@@ -18,31 +19,12 @@ import babyStarFish from './assets/carousel/star_fish_baby.png'
 import type { EventProject, PublicEvent } from './types'
 
 interface InvitationPageProps {
+  onEventLoaded?: (event: PublicEvent | null) => void
+  onLoadError?: (error: string) => void
   previewEvent?: EventProject
   onClosePreview?: () => void
   effectsActive?: boolean
   invitationHeaderRef?: RefObject<HTMLElement | null>
-}
-
-const sampleEvent: PublicEvent = {
-  id: 0,
-  public_slug: 'sample',
-  combined_title: 'A little wonder, a whole lot of love',
-  welcome_message: 'With full hearts, we invite you to celebrate a very special day with us.',
-  event_date: '2027-01-09',
-  start_time: '10:00',
-  end_time: '15:00',
-  timezone: 'Asia/Manila',
-  venue_name: 'Peri-Peri Charcoal Chicken & Sauce Bar (Taytay)',
-  venue_address: 'East. Barangay, Manila E Rd, Taytay, 1920 Rizal',
-  map_url: null,
-  rsvp_deadline: null,
-  cover_image_url: null,
-  gallery_urls: [],
-  theme: 'sage',
-  allow_plus_ones: false,
-  max_party_size: 1,
-  occasion_labels: ['Christening', 'First Birthday'],
 }
 
 const BABY_PHOTOS: BabyPhoto[] = [
@@ -52,37 +34,17 @@ const BABY_PHOTOS: BabyPhoto[] = [
   { src: babyStarFish, alt: 'Illustration of a baby hugging a starfish' },
 ]
 
-function prettyDate(date: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(`${date}T12:00:00`))
-}
-
-function prettyTime(time: string | null): string | null {
-  if (!time) return null
-  const [hours, minutes] = time.split(':').map(Number)
-  return new Intl.DateTimeFormat(undefined, {
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZone: 'UTC',
-  }).format(new Date(Date.UTC(2020, 0, 1, hours, minutes)))
-}
-
-export default function InvitationPage({ previewEvent, onClosePreview, effectsActive = false, invitationHeaderRef }: InvitationPageProps) {
+export default function InvitationPage({ previewEvent, onClosePreview, effectsActive = false, invitationHeaderRef, onEventLoaded, onLoadError }: InvitationPageProps) {
   const params = new URLSearchParams(window.location.search)
   const invitationToken = params.get('invite')
   const slug = decodeURIComponent(window.location.pathname.slice(1))
-  const sample = !previewEvent && !invitationToken && slug === ''
   const preview = Boolean(previewEvent)
   const [event, setEvent] = useState<PublicEvent | null>(previewEvent ? {
     ...previewEvent,
     occasion_labels: previewEvent.occasion_labels.map((label) => label.label),
-  } : sample ? sampleEvent : null)
+  } : null)
   const [guestName, setGuestName] = useState('')
-  const [loading, setLoading] = useState(!sample && !preview)
+  const [loading, setLoading] = useState(!preview)
   const [pageError, setPageError] = useState('')
   const [formError, setFormError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
@@ -99,26 +61,32 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
   useEffect(() => { if (formError) errorSummary.current?.focus({ preventScroll: true }) }, [formError])
 
   useEffect(() => {
-    if (sample || previewEvent) return
+    if (previewEvent) return
+    const controller = new AbortController()
 
     const load = async () => {
       try {
         const result = invitationToken
-          ? await api<{ event: PublicEvent; guest_name: string }>(`/api/invitations/${encodeURIComponent(invitationToken)}`)
-          : await api<{ event: PublicEvent }>(`/api/events/${encodeURIComponent(slug)}`)
+          ? await api<{ event: PublicEvent; guest_name: string }>(`/api/invitations/${encodeURIComponent(invitationToken)}`, { signal: controller.signal })
+          : await api<{ event: PublicEvent }>(slug ? `/api/events/${encodeURIComponent(slug)}` : '/api/website-event', { signal: controller.signal })
         setEvent(result.event)
         if ('guest_name' in result && typeof result.guest_name === 'string') setGuestName(result.guest_name)
       } catch (error) {
+        if (controller.signal.aborted) return
         setPageError(error instanceof ApiError && error.status === 404
           ? 'This invitation is unavailable. It may be unpublished, expired, or revoked.'
           : error instanceof Error ? error.message : 'We could not load this invitation.')
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
 
     void load()
-  }, [invitationToken, previewEvent, sample, slug])
+    return () => controller.abort()
+  }, [invitationToken, previewEvent, slug])
+
+  useEffect(() => { onEventLoaded?.(event) }, [event, onEventLoaded])
+  useEffect(() => { onLoadError?.(pageError) }, [pageError, onLoadError])
 
   useLayoutEffect(() => {
     if (!effectsActive || !event || !invitationHeaderRef?.current) return
@@ -160,7 +128,7 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
     setFieldErrors({})
     setSuccess('')
 
-    if (sample || preview || !event) {
+    if (preview || !event) {
       setFormError('This preview is not connected to a live RSVP. Open a published invitation link to respond.')
       return
     }
@@ -226,26 +194,10 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
     return <main className="loading-page"><span className="spinner" />Loading your invitation…</main>
   }
   if (!event) {
-    return <main className="message-page"><a className="brand" href="/">gather<span>.</span></a><h1>Invitation not found</h1><p>{pageError}</p></main>
+    return <main className="message-page"><a className="brand" href="/">{siteConfig.name}</a><h1>Invitation not found</h1><p>{pageError}</p></main>
   }
 
-  const startsAt = prettyTime(event.start_time)
-  const endsAt = prettyTime(event.end_time)
-  const stops: CelebrationStop[] = sample ? [
-    {
-      label: 'Christening',
-      name: 'Minor Basilica and Parish of St. John the Baptist- Taytay, Rizal (Diocese of Antipolo)',
-      address: 'Taytay, Rizal',
-      startsAt: prettyTime('10:00'), endsAt: prettyTime('11:00'), mapUrl: null,
-    },
-    {
-      label: 'Birthday party', name: event.venue_name, address: event.venue_address,
-      startsAt: prettyTime('11:30'), endsAt, mapUrl: event.map_url,
-    },
-  ] : [{
-    label: 'Celebration', name: event.venue_name, address: event.venue_address,
-    startsAt, endsAt, mapUrl: event.map_url,
-  }]
+  const stops = eventStops(event)
   const fieldAttributes = (name: string) => ({
     'aria-invalid': fieldErrors[name]?.length ? true as const : undefined,
     'aria-describedby': fieldErrors[name]?.length ? `rsvp-${name}-error` : undefined,
@@ -257,16 +209,16 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
     <main ref={pageRef} className={`invitation min-h-screen theme-${event.theme}`}>
       <BubbleField pageRef={pageRef} enabled={effectsActive && !preview} burst={bubbleBurst} />
       <nav ref={invitationHeaderRef} className="invite-nav flex items-center justify-between" tabIndex={-1}>
-        <a className="brand" href="/">gather<span>.</span></a>
+        <a className="brand" href="/">{siteConfig.name}</a>
         <div className="invite-section-links">
-          <a href="#welcome-heading">Our little one</a>
+          {/* <a href="#welcome-heading">Our little one</a> */}
           <a href="#details-heading">Details</a>
           <a href="#baby-carousel-heading">Images</a>
           <a href="#rsvp">RSVP</a>
         </div>
         {preview && onClosePreview
           ? <button className="preview-close" type="button" onClick={onClosePreview}>← Back to dashboard</button>
-          : <span className="nav-note">{sample ? 'SAMPLE INVITATION · PREVIEW' : 'YOU ARE INVITED'}</span>}
+          : <span className="nav-note">YOU ARE INVITED</span>}
       </nav>
       <EventHero event={event} formattedDate={prettyDate(event.event_date)} />
       <EventCountdown event={event} />
@@ -284,8 +236,8 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
         <div className="rsvp-card">
           <p className="eyebrow">WE HOPE YOU CAN JOIN US</p>
           <h2 id="rsvp-heading" tabIndex={-1}>Will you be there?</h2>
-          {event.rsvp_deadline && <p className="deadline">Please reply by {new Date(event.rsvp_deadline).toLocaleDateString()}.</p>}
-          {(sample || preview) && <p className="sample-notice">{preview ? 'Preview mode — RSVPs are disabled.' : 'You’re viewing a sample invitation. RSVPs are disabled in this preview.'}</p>}
+          {event.rsvp_deadline && <p className="deadline">Please reply by {deadlineDate(event)}.</p>}
+          {preview && <p className="sample-notice">Preview mode - RSVPs are disabled.</p>}
           {success ? (
             <RsvpSuccess message={success} onChange={() => setSuccess('')} />
           ) : (
@@ -308,13 +260,13 @@ export default function InvitationPage({ previewEvent, onClosePreview, effectsAc
                 <label>Phone <span className="optional">(optional)</span><input {...fieldAttributes('phone')} type="tel" name="phone" autoComplete="tel" maxLength={40} />{fieldError('phone')}</label>
               </div>
               {formError && <p ref={errorSummary} className="form-error" role="alert" tabIndex={-1}>{formError}</p>}
-              <button className="button button-dark" type="submit" disabled={submitting || sample || preview}>{submitting ? 'Saving your reply…' : 'Send my RSVP'} <span aria-hidden="true">↗</span></button>
+              <button className="button button-dark" type="submit" disabled={submitting || preview}>{submitting ? 'Saving your reply…' : 'Send my RSVP'} <span aria-hidden="true">↗</span></button>
             </form>
           )}
         </div>
         </div>
       </section>
-      <footer className="invite-footer"><a className="brand" href="/">gather<span>.</span></a><p>Made with care, for moments that matter.</p><a href="#rsvp">Reply to invitation ↑</a></footer>
+      <footer className="invite-footer"><a className="brand" href="/">{siteConfig.name}</a><p>Made with care, for moments that matter.</p><a href="#rsvp">Reply to invitation ↑</a></footer>
     </main>
   )
 }

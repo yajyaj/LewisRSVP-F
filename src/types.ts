@@ -1,9 +1,22 @@
 export type AttendanceStatus = 'attending' | 'declined'
 export type EventStatus = 'draft' | 'published' | 'archived'
 
+export interface EventStop {
+  label: string
+  venue_name: string | null
+  venue_address: string | null
+  map_url: string | null
+  start_time: string | null
+  end_time: string | null
+}
+
 export interface PublicEvent {
+  event_stops?: EventStop[]
+
   id: number
   public_slug: string
+  landing_title?: string | null
+  landing_subtitle?: string | null
   combined_title: string
   welcome_message: string | null
   event_date: string

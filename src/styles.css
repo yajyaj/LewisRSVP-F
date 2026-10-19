@@ -266,6 +266,13 @@ td small { color: var(--muted); display: block; font-size: .68rem; margin-top: 5
 .wave-layer--foam { background: rgba(232, 243, 252, .85); }
 .wave-reveal.is-playing .wave-layer--water { animation: wave-sweep 1.05s cubic-bezier(.35,.03,.65,1) both; }
 .wave-reveal.is-playing .wave-layer--foam { animation: wave-sweep 1.05s .08s cubic-bezier(.35,.03,.65,1) both; }
+@media (max-width: 600px) {
+  .invitation-landing { height: 100dvh; }
+  .wave-layer { height: 210vmax; width: 210vmax; }
+  .wave-reveal.is-playing .wave-layer--water,
+  .wave-reveal.is-playing .wave-layer--foam { animation-duration: 1.45s; }
+}
+
 @keyframes bubble-drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-13px); } }
 @keyframes wave-sweep { 0% { top: 108%; transform: translate(-50%, 0) rotate(0deg); } 65% { top: -70%; transform: translate(-50%, 0) rotate(38deg); } 100% { top: -190%; transform: translate(-50%, 0) rotate(75deg); } }
 

@@ -1,3 +1,4 @@
+import { siteConfig } from './siteConfig'
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, api, downloadCsv, login } from './api'
@@ -130,7 +131,7 @@ export default function AdminApp() {
   if (!user) {
     return (
       <main className="login-page">
-        <a className="brand" href="/">gather<span>.</span></a>
+        <a className="brand" href="/">{siteConfig.name}</a>
         <form className="login-card" onSubmit={signIn}>
           <p className="eyebrow">ORGANIZER SIGN IN</p>
           <h1>Welcome back.</h1>
@@ -195,13 +196,13 @@ export default function AdminApp() {
                   </article>
                 ))}</div>}
           </section>}
-      <footer className="admin-footer"><span className="brand">gather<span>.</span></span><span>One occasion, or many — celebrate them together.</span></footer>
+      <footer className="admin-footer"><span className="brand">{siteConfig.name}</span><span>One occasion, or many — celebrate them together.</span></footer>
     </div>
   )
 }
 
 function AdminHeader({ user, onSignOut }: { user: User; onSignOut: () => void }) {
-  return <header className="admin-header flex items-center justify-between"><a className="brand" href="/admin">gather<span>.</span></a><div><span className="organizer-name">{user.name}</span><button className="text-link" type="button" onClick={onSignOut}>Sign out</button></div></header>
+  return <header className="admin-header flex items-center justify-between"><a className="brand" href="/admin">{siteConfig.name}</a><div><span className="organizer-name">{user.name}</span><button className="text-link" type="button" onClick={onSignOut}>Sign out</button></div></header>
 }
 
 function EventWorkspace({

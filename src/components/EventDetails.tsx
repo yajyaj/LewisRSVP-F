@@ -36,10 +36,9 @@ export default function EventDetails({ event, date, stops }: EventDetailsProps) 
         <article className="detail-card ocean-detail-card">
           <DetailIcon kind="time" />
           <h3>Time</h3>
-          {stops.map((stop, index) => <div className="detail-stop" key={stop.label}>
+          {stops.map((stop) => <div className="detail-stop" key={stop.label}>
             {stops.length > 1 && <h4>{stop.label}</h4>}
             <p>{stopTime(stop)}</p>
-            {index === stops.length - 1 && event.timezone && <p>{event.timezone.replaceAll('_', ' ')}</p>}
           </div>)}
         </article>
       </div>
