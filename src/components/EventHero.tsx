@@ -12,12 +12,6 @@ export default function EventHero({ event, formattedDate }: { event: PublicEvent
             {event.occasion_labels.map((label) => <span key={label}>{label}</span>)}
           </div>
           <p className="hero-date">{formattedDate}</p>
-          <a className="button button-dark" href="#rsvp" onClick={(click) => {
-            click.preventDefault()
-            window.history.replaceState(window.history.state, '', '#rsvp')
-            document.getElementById('rsvp')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
-            document.getElementById('rsvp-heading')?.focus({ preventScroll: true })
-          }}>RSVP Now <span aria-hidden="true">↗</span></a>
           <p className="ocean-hero-caption">A DAY MADE FOR MAKING MEMORIES</p>
         </div>
         <div className={`ocean-hero-art${event.cover_image_url ? ' has-event-cover' : ''}`}>
